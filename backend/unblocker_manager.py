@@ -67,6 +67,10 @@ class local_docker:
     def remove_docker(self, id):
         info(f"删除容器{id}")
         os.system(f"docker stop {prefix}{id} && docker rm {prefix}{id}")
+        
+    def restart_docker(self, id):
+        info(f"重新启动容器{id}")
+        os.system(f"docker restart {prefix}{id}")
 
     def get_local_list(self):
         local_list = []
@@ -76,6 +80,15 @@ class local_docker:
                 local_list.append(line.strip().split("_")[1])
         info(f"本地存在{len(local_list)}个容器")
         return local_list
+    
+    def get_local_running_list(self):
+        local_running_list = []
+        result = os.popen("docker ps --format \"{{.Names}}\" ")
+        for line in result.readlines():
+            if line.find(prefix) != -1:
+                local_running_list.append(line.strip().split("_")[1])
+        info(f"本地存在{len(local_running_list)}个容器正在运行中")
+        return local_running_list
 
     def get_remote_list(self):
         result_list = self.api.get_task_list()
@@ -89,11 +102,17 @@ class local_docker:
     def sync(self):
         info("开始同步")
         self.local_list = self.get_local_list()
+        local_running_list = self.get_local_running_list()
         # 处理需要删除的容器（本地存在，云端不存在）
         for id in self.local_list:
             if id not in self.get_remote_list():
                 self.remove_docker(id)
                 self.local_list.remove(id)
+        # 如果存在停止的容器，就重新启动一次
+        if (len(self.local_list) != len(local_running_list)):
+            for id in self.local_list:
+                if id not in local_running_list:
+                    self.restart_docker(id)
         # 处理需要部署的容器（本地不存在，云端存在）
         remote_list = self.get_remote_list()
         for id in remote_list:
