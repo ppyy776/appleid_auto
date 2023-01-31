@@ -67,7 +67,7 @@ class local_docker:
     def remove_docker(self, id):
         info(f"删除容器{id}")
         os.system(f"docker stop {prefix}{id} && docker rm {prefix}{id}")
-        
+
     def restart_docker(self, id):
         info(f"重新启动容器{id}")
         os.system(f"docker restart {prefix}{id}")
@@ -80,7 +80,7 @@ class local_docker:
                 local_list.append(line.strip().split("_")[1])
         info(f"本地存在{len(local_list)}个容器")
         return local_list
-    
+
     def get_local_running_list(self):
         local_running_list = []
         result = os.popen("docker ps --format \"{{.Names}}\" ")
@@ -108,6 +108,7 @@ class local_docker:
             if id not in self.get_remote_list():
                 self.remove_docker(id)
                 self.local_list.remove(id)
+                local_running_list.remove(id)
         # 如果存在停止的容器，就重新启动一次
         if (len(self.local_list) != len(local_running_list)):
             for id in self.local_list:
