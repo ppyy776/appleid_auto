@@ -16,6 +16,14 @@ if ($account->id==-1){
     <title>账号分享</title>
 </head>
 <body>
+
+<script>
+	document.oncontextmenu = function(){
+		return false
+	}
+</script>
+
+
 <script>
     var clipboard = new ClipboardJS('.btn');
 
@@ -29,16 +37,20 @@ if ($account->id==-1){
         });
     }
 </script>
+
 <div class="container" style="align-self: center; position: absolute;width: <?php echo ((isMobile())?"auto":"20%"); ?>; margin-top:1rem">
     <div class="card" style="width: 20rem;">
         <div class="card-body">
-            <h5 class="card-title">账号信息</h5>
+           <h2 align="center"><font size=2 color=“c00020"><strong>登录会出现安全验证</strong></font></h2>
+           <h2 align="center"><font size=2 color=“c00020"><strong>请选择：其他选项→不升级</strong></font></h2>
+            
             <h6 class="card-text"><?php echo $account->username ?></h6>
             <p class="card-subtitle mb-2 text-muted">上次检测时间：<?php echo $account->last_check ?></p>
             <!-- 如果当前时间与检测时间误差不大于10分钟，则显示状态正常 -->
-            <p class="card-subtitle mb-2 text-muted">状态：<?php echo ((time()-strtotime($account->last_check))<600)?"<font color='#549A31'>正常</font>":"<font color='#B40404'>异常</font>" ?></p>
+            
             <button id="username" class="btn btn-primary" data-clipboard-text="<?php echo $account->username ?>" onclick='alert_success()'>复制账号</button>
             <button id="password" class="btn btn-success" data-clipboard-text="<?php echo $account->password ?>" onclick='alert_success()'>复制密码</button>
+            
         </div>
     </div>
 </div>
