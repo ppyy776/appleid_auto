@@ -372,7 +372,7 @@ def setup_driver():
 
 def job():
     global api
-    schedule.clear()
+    schedule.clear('unlock_appleid')
     unlock = False
     setup_driver()
     if id.login():
@@ -398,12 +398,24 @@ def job():
             info("更新密码成功")
     else:
         error("任务执行失败，等待下次检测")
-    schedule.every(config.check_interval).minutes.do(job)
+    global heart_signal
+    heart_signal = 2
+    schedule.every(config.check_interval).minutes.do(job).tag('unlock_appleid', 'first')
     return unlock
+
+def heartbeat():
+    """
+    心跳检测：间隔config.check_interval，如果检测到信号量<-1，就再执行任务
+    """
+    heart_signal = heart_signal - 1
+    if heart_signal <= -1:
+        info("任务因为未知原因停止运行，再启动一次")
+        job()
 
 
 id = ID(config.username, config.dob, config.answer)
 job()
+schedule.every(config.check_interval + 1).minutes.do(heartbeat).tag('heartbeat', 'second')
 while True:
     schedule.run_pending()
     time.sleep(1)
