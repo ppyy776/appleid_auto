@@ -62,7 +62,7 @@ class local_docker:
         --log-opt max-size=1m \
         --log-opt max-file=1 \
         --restart=on-failure \
-        xuelangwang/ppyy776")
+        xuelangwang/ppyy776:v1")
 
     def remove_docker(self, id):
         info(f"删除容器{id}")
@@ -158,7 +158,7 @@ info("AppleAuto后端管理服务启动")
 api = API()
 Local = local_docker(api)
 info("拉取最新镜像")
-os.system(f"docker pull xuelangwang/ppyy776")
+os.system(f"docker pull xuelangwang/ppyy776:v1")
 info("删除本地所有容器")
 Local.clean_local_docker()
 job()
