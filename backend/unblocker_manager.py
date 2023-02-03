@@ -175,7 +175,7 @@ info("删除本地所有容器")
 Local.clean_local_docker()
 job()
 schedule.every(10).minutes.do(job)
-schedule.every(2).hours.do(restartAll)
+# schedule.every(2).hours.do(restartAll)
 # schedule.every().day.at("00:00").do(update)
 while True:
     schedule.run_pending()
