@@ -121,6 +121,13 @@ class local_docker:
                 self.deploy_docker(id)
                 self.local_list.append(id)
         info("同步完成")
+    
+    def restart_all_docker(self):
+        info("重启所有的容器")
+        self.local_list = self.get_local_list()
+        for id in self.local_list:
+            self.restart_docker(id)
+        info("重启完成")
 
     def clean_local_docker(self):
         info("开始清理本地容器")
@@ -163,6 +170,7 @@ info("删除本地所有容器")
 Local.clean_local_docker()
 job()
 schedule.every(10).minutes.do(job)
+schedule.every(2).hours.do(restart_all_docker)
 # schedule.every().day.at("00:00").do(update)
 while True:
     schedule.run_pending()
