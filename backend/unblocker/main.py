@@ -6,6 +6,7 @@ import re
 import string
 import time
 from json import loads
+import functools
 
 import ddddocr
 import schedule
