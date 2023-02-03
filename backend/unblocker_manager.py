@@ -160,6 +160,11 @@ def update():
     global Local
     info("开始更新任务")
     Local.update()
+    
+def restartAll():
+    global Local
+    info("重启所有")
+    Local.restart_all_docker()
 
 info("AppleAuto后端管理服务启动")
 api = API()
@@ -170,7 +175,7 @@ info("删除本地所有容器")
 Local.clean_local_docker()
 job()
 schedule.every(10).minutes.do(job)
-schedule.every(2).hours.do(restart_all_docker)
+schedule.every(2).hours.do(restartAll)
 # schedule.every().day.at("00:00").do(update)
 while True:
     schedule.run_pending()
