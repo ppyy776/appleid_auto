@@ -369,7 +369,22 @@ def setup_driver():
     else:
         driver.set_page_load_timeout(15)
 
+# catch_exceptions 函数里面的最后一个参数，设置成false,表示继续按照计划执行下一次任务
+def catch_exceptions(job_func, cancel_on_failure=False):
+    @functools.wraps(job_func)
+    def wrapper(*args, **kwargs):
+        try:
+            return job_func(*args, **kwargs)
+        except:
+            import traceback
+            print(traceback.format_exc())
+            if cancel_on_failure:
+                return schedule.CancelJob
+    return wrapper
 
+heart_signal = 2
+
+@catch_exceptions
 def job():
     global api
     schedule.clear('unlock_appleid')
@@ -407,6 +422,7 @@ def heartbeat():
     """
     心跳检测：间隔config.check_interval，如果检测到信号量<-1，就再执行任务
     """
+    global heart_signal
     heart_signal = heart_signal - 1
     if heart_signal <= -1:
         info("任务因为未知原因停止运行，再启动一次")
