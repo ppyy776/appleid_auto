@@ -74,9 +74,8 @@ class local_docker:
     def __init__(self, api):
         self.api = api
         self.local_list = self.get_local_list()
-        self.restart_invervals_min = -1
         self.tasks_intervals = self.get_tasks_intervals()
-        
+        self.restart_invervals_min = -1
 
     def deploy_docker(self, id):
         info(f"部署容器{id}")
@@ -99,7 +98,7 @@ class local_docker:
 
     def restart_docker_delay(self, id, delay_min):
         info(f"一定时间后重启容器{id}")
-        delay_second = delay_min * 60
+        delay_second = delay_min
         os.system(f"docker restart -t {delay_second} {prefix}{id}")
 
     def get_local_list(self):
@@ -150,7 +149,8 @@ class local_docker:
         all_keys = self.tasks_intervals.keys()
         for id in self.local_list:
             if id in all_keys:
-                self.restart_docker_delay(id, self.tasks_intervals[id])
+                # self.restart_docker_delay(id, self.tasks_intervals[id])
+                self.restart_docker_delay(id, 20)
                 time.sleep(1)
 
     def sync(self):
