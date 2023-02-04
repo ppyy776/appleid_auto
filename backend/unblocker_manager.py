@@ -47,11 +47,35 @@ class API:
             else:
                 return result['data'].split(",")
 
+    def get_tasks_intervals(self):
+        try:
+            result = json.loads(get(f"{self.url}/api/?key={self.key}&action=get_tasks_check_intervals", verify=False).text)
+        except Exception as e:
+            error("获取任务间隔时间失败")
+            return False
+        else:
+            if result['status'] == "fail":
+                error("获取任务列表失败")
+                return False
+            elif result['data'] == "":
+                return {}
+            else:
+                if type(result['data']) == str:
+                    data = json.loads(result['data'])
+                    ret = {}
+                    for k,v in data.items():
+                        ret[k] = int(v)
+                    return ret
+                else:
+                    return result['data']
+
 
 class local_docker:
     def __init__(self, api):
         self.api = api
         self.local_list = self.get_local_list()
+        self.tasks_intervals = self.get_tasks_intervals()
+        self.restart_invervals_min = -1
 
     def deploy_docker(self, id):
         info(f"部署容器{id}")
@@ -71,6 +95,11 @@ class local_docker:
     def restart_docker(self, id):
         info(f"重新启动容器{id}")
         os.system(f"docker restart {prefix}{id}")
+
+    def restart_docker_delay(self, id, delay_min):
+        info(f"一定时间后重启容器{id}")
+        delay_second = delay_min * 60
+        os.system(f"docker restart -t {delay_second} {prefix}{id}")
 
     def get_local_list(self):
         local_list = []
@@ -98,6 +127,30 @@ class local_docker:
         else:
             info(f"从云端获取到{len(result_list)}个任务")
             return result_list
+
+    def get_tasks_intervals(self):
+        task_intervals = self.api.get_tasks_intervals()
+        if not task_intervals:
+            info("获取云端任务间隔时间失败")
+            return {}
+        else:
+            info("获取云端任务间隔时间成功")
+            dic = task_intervals
+            for k,v in dic.items():
+                if v > self.restart_invervals_min:
+                    self.restart_invervals_min = v
+            return task_intervals
+
+    def restart_all_task_delay(self):
+        self.tasks_intervals = self.get_tasks_intervals()
+        if self.restart_invervals_min <= 0:
+            return
+        self.local_list = self.get_local_list()
+        all_keys = self.tasks_intervals.keys()
+        for id in self.local_list:
+            if id in all_keys:
+                self.restart_docker_delay(id, self.tasks_intervals[id])
+                time.sleep(1)
 
     def sync(self):
         info("开始同步")
@@ -166,6 +219,17 @@ def restartAll():
     info("重启所有")
     Local.restart_all_docker()
 
+def restartAllDelay():
+    schedule.clear("restart_all_task_job")
+    global Local
+    info("延迟重启所有容器")
+    Local.restart_all_task_delay()
+    intervals = 30
+    if Local.restart_invervals_min > 0:
+        intervals = Local.restart_invervals_min * 2 - 1
+    info("延迟重启执行结束，每个容器将在指定间隔期间重启")
+    schedule.every(intervals).minutes.do(restartAllDelay).tag("restart_all_task_job")
+
 info("AppleAuto后端管理服务启动")
 api = API()
 Local = local_docker(api)
@@ -175,6 +239,8 @@ info("删除本地所有容器")
 Local.clean_local_docker()
 job()
 schedule.every(10).minutes.do(job)
+schedule.every(30).minutes.do(restartAllDelay).tag("restart_all_task_job")
+
 # schedule.every(2).hours.do(restartAll)
 # schedule.every().day.at("00:00").do(update)
 while True:
