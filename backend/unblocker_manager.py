@@ -74,8 +74,9 @@ class local_docker:
     def __init__(self, api):
         self.api = api
         self.local_list = self.get_local_list()
-        self.tasks_intervals = self.get_tasks_intervals()
         self.restart_invervals_min = -1
+        self.tasks_intervals = self.get_tasks_intervals()
+        
 
     def deploy_docker(self, id):
         info(f"部署容器{id}")
