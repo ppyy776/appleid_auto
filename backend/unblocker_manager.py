@@ -151,7 +151,7 @@ class local_docker:
         for id in self.local_list:
             if id in all_keys:
                 # self.restart_docker_delay(id, self.tasks_intervals[id])
-                self.restart_docker_delay(id, 20)
+                self.restart_docker_delay(id, 40)
                 time.sleep(1)
 
     def sync(self):
