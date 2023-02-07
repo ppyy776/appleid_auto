@@ -427,6 +427,7 @@ def heartbeat():
     heart_signal = heart_signal - 1
     if heart_signal <= -1:
         info("任务因为未知原因停止运行，再启动一次")
+        driver.quit()
         job()
 
 
