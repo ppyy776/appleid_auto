@@ -163,7 +163,8 @@ class local_docker:
             if id not in self.get_remote_list():
                 self.remove_docker(id)
                 self.local_list.remove(id)
-                local_running_list.remove(id)
+                if id in local_running_list:
+                    local_running_list.remove(id)
         # 如果存在停止的容器，就重新启动一次
         if (len(self.local_list) != len(local_running_list)):
             for id in self.local_list:
