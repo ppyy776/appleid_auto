@@ -46,6 +46,40 @@ switch ($_GET["action"]) {
         );
         break;
     }
+    case "get_tasks_check_intervals":
+    {
+        $result = $conn->prepare("SELECT id,check_interval FROM account;");
+        $result->execute();
+        $task_list = [];
+        while ($row = $result->fetch()) {
+            $temp_id = $row['id'];
+            $task_list[$temp_id] = $row['check_interval'];
+        }
+        $data = array(
+            'status' => 'success',
+            'message' => '获取成功',
+            'data' => json_encode($task_list, JSON_UNESCAPED_UNICODE)
+        );
+        break;
+    }
+    case "get_unusual_ids":
+    {
+        $result = $conn->prepare("SELECT id,username,last_check,remark,check_interval FROM account;");
+        $result->execute();
+        $unusual_ids = [];
+        $current = time();
+        while ($row = $result->fetch()) {
+            if (($current-strtotime($row['last_check']))> (60 * $row['check_interval'] + 600)) {
+                $unusual_ids[] = $row['id'] . "|" . $row['username'] . "|" . $row['remark'];
+            }      
+        }
+        $data = array(
+            'status' => 'success',
+            'message' => '获取成功',
+            'unusualIds' => implode(",", $unusual_ids)
+        );
+        break;
+    }
     case "get_task_info":
     {
         if (!isset($_GET['id'])) {
